@@ -1,0 +1,220 @@
+---
+title: Using numbers to find the greatest scorer in NBA history
+author: Xander Chamberlin
+date: '2022-04-29'
+slug: who-is-the-greatest-scorer-in-nba-history
+categories: []
+tags: []
+---
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+library(tidyverse)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggrepel)
+library(gt)
+library(ggalt)
+library(data.table)
+```
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+scorers <- read_csv("topscorersdata.csv")
+```
+Using numbers to find the greatest scorer in NBA history
+
+For the last couple of years, basketball fans have been trying to settle one of the biggest debates in the history of the game.
+
+Who is the greatest scorer in NBA history?
+
+Many people have used various methods to settle the debate, such as comparing career averages and comparing highlights from different players. Yes I have acutally see people do that on twitter and it has resulted in tweets such as.
+
+"There's no way you can watch peak MJ and peak KD play basketball and conclude that MJ is better offensively."
+
+Yes that is a real tweet.
+
+This has lead me to believe that most fans methods of comparison are absolute garbage.
+
+I have instead determined three advanced statistics that settle the debate once and for all.
+
+In order to find out who is truly the cream of the crop when it comes to scoring you have to compare a players best scoring years instead of their entire carrer averages. Many players have diffrent carrer lenghts which may effect their carrer averages. Players may also have primes that last  diffrent lenghts as well
+
+So to fix these issues, I have decided to average each players five year highest scoring strech to create this first upcoming chart.  This fixes the longevity and prime length issues by taking a players best five year stretch.
+
+Before I forget, the  players that were chosen were the top 20 highest points per game scorers in NBA history. I chose these specific players because they are the best of the best when it comes to putting up points. Each player on the list has their own argument for being considered the greatest scorer in NBA history.
+
+Without further ado, here is the first chart showcasing the top 10 players with the highest 5 year scoring average. Lets have a look.
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+top1<-scorers %>%
+  group_by(Player) %>%
+  summarise(
+    total = n(),
+     P5YR = sum(P5YR)
+  ) %>% 
+ arrange(desc(P5YR)) %>% 
+  filter(P5YR>29.78)
+```
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+WC <- scorers %>% filter(Player == "Wilt Chamberlain")
+
+ggplot() + 
+  geom_lollipop(
+    data=top1, 
+    aes(y=Player, x=P5YR, xend=P5YR),
+    horizontal = TRUE ,
+    size= 1.6
+  )+
+  geom_lollipop(
+    data=WC, 
+    aes(y=Player, x=P5YR, xend=P5YR),
+    horizontal = TRUE ,
+    size= 1.6 , 
+    color= "red"
+  ) +
+  labs(title="Top 10 Scoring Five Year\nStretches",
+       subtitle="Wilt Chamberlain is a huge outlier with a\n41.5 PT AVG",
+       caption="Source: Basketball refrence | By Xander Chamberlin" ,
+       y="Player") +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+     
+    )
+
+```
+
+
+As you can see, Wilt Chamberalin is a massive outlier with a 41.5 five year scoring average. That is NUTS!! Michael Jordan is in second with a 33.94. Rounding out the top 5 is Elgin Baylor with 32.42, James Harden with 31.78, and Rick Barry with 31.64. 
+
+Now, scoring a lot of points is one thing but can a player be efficient while putting up those massive numbers. Shooting 45% and 35% with the same PPG average are two very different stat lines. 
+
+That is why the second category I will be looking at is Player Efficiency Rating or PER. PER is  detailed formula developed that rates every player's statistical performance based on the type  shots made, attempted, and percentage made.
+
+Here is the chart showcasing the top 10 players with the highest PER. Take a look.
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+top2<-scorers %>%
+  group_by(Player) %>%
+  summarise(
+    total = n(),
+     PER = sum(PER)
+  ) %>% 
+ arrange(desc(PER)) %>% 
+ filter(PER>23.2)
+  
+```
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+ggplot() + geom_bar(data=top2, aes(x=reorder(Player,PER) , weight=PER)) +
+ coord_flip() +
+  labs(
+    x="Player", 
+    y="Win Shares Per 48 Minutes", 
+    title="The 10 players with the highest PER", 
+    subtitle="Jordan edges out Lebron in tight race\nfor first", 
+    caption="Source: Basketball refrence | By Xander Chamberlin"
+    )
+```
+This time, Jordan takes the top spot with a PER of 27.9. LeBron James is in second place right behind Jordan with a PER of 27.3. This is interesting because LeBron was not on the top 10 of the top 5 year scoring average list. So that Means that LeBron is prioritizing efficient shots  over volume.
+
+Wilt Chamberlain again makes the top three with a PER of 26.2. Bob Pettit takes the fourth slot with 25.4. Kevin Durant is close behind however, and finishes off the top 5 with a PER of 25.3. 
+
+Now, one can score and be efficient, but does that translate to team success. If a player has a high scoring average and efficiency rate, they must be the main force contributing to a teams wins. We will figure this out with a statistic called: "Win shares."
+
+A win share is a very complicated statistic so I will sum it up in the fastest way possible. A win share is basically how much a player contributes to a win. If a team does not have a certain player, they will loose as many games as the win shares the player has for that season.
+
+For example, the record for most win shares in a season is 25.4 held by Kareem Abdul-Jabbar in 1972. Now, if Kareem somehow disappeared for the entirety of the 71-72 season, the Bucks would loose 25.4 more games than their original record.
+
+Now, I will be using win shares per 48 minutes. This means that each players win share rate will show up to how much of a win they contributed to a single game through their careers. This is done to balance out career lengths. A player with a 20 year career will have a very different win share average than a player with a 13 year career. 
+
+After all that mumbo jumbo was just explained, lets finally look at the win share chart. Here it is. 
+
+ 
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+top3<-scorers %>%
+  group_by(Player) %>%
+  summarise(
+    total = n(),
+     WSP48 = sum(WSP48)
+  ) %>% 
+ arrange(desc(WSP48)) %>% 
+  filter(WSP48>0.2035)
+```
+
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+ggplot() + geom_bar(data=top3, aes(x=reorder(Player,WSP48) , weight=WSP48)) +
+ coord_flip() +
+  labs(
+    x="Player", 
+    y="Win Shares Per 48 Minutes", 
+    title="The top 10 win shares per 48 mintues", 
+    subtitle="Jordan with a slight lead over the competiton", 
+    caption="Source: Basketball refrence | By Xander Chamberlin"
+    )
+```
+
+
+The chart showcases a tight race for first and second place. MJ takes the first spot with a win share per 48 minute average of 0.2505, while Wilt Chamberlain comes in second with 0.2480. 
+
+There is a bit of a drop off for third place and bellow. LeBron takes the third place with 0.2297. Kareem is fourth with 0.2284. Rounding off the top 5 is James Harden with 0.2202.
+
+Next we will put all the stats together to find out who the top dog is. 
+
+With all stats considered in the same chart, who is truly the best scorer ever?
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+MJ <- scorers %>% filter(Player == "Michael Jordan")
+LBJ <- scorers %>% filter(Player == "Lebron James")
+WC <- scorers %>% filter(Player == "Wilt Chamberlain")
+labels <- bind_rows(MJ, LBJ, WC)
+
+ggplot() + 
+  geom_point(
+    data=scorers, 
+    aes(x=PER, y=WSP48, size=P5YR),
+    color="grey") + 
+  geom_point(
+    data=MJ, 
+     aes(x=PER, y=WSP48, size=P5YR), 
+    color="red",show.legend = FALSE) +
+  geom_point(
+    data=LBJ, 
+     aes(x=PER, y=WSP48, size=P5YR), 
+    color="yellow",show.legend = FALSE) +
+  geom_point(
+    data=WC, 
+     aes(x=PER, y=WSP48, size=P5YR), 
+    color="purple",show.legend = FALSE) +
+ geom_text_repel(
+    data=labels, 
+     aes(x=PER, y=WSP48, label=Player)) +
+      labs(
+    title="Who is the greatest scorer in NBA history?", 
+    subtitle="Jordan, Wilt, and Lebron Dominate above everyone", 
+    caption="Source: Basketball refrence | By Xander Chamberlin"
+  )
+    
+    
+
+```
+
+Based on the data it is Michael Jordan. 
+
+Wilt Chamberlain is a close second but Jordan takes the cake as he leads two categories while Chamberlain only leads one.
+
+Based on the method used to place the top two, LeBron James takes the third spot for coming in the top three of two of the three categories. As for the fourth and fith spots, that is up for your interpretation but I have to go with Kareem Abdul-Jabbar at fourth and James Harden at fifth.
+
+However there is no defiant list. The NBA does not officially rank players (other than the top 75 list). This blog post was merely me taking in my opinion the three most important stats for scoring and determine a winner based on placement. Ones method for finding a winner may be different from mine. Heck, it might be one of the trash methods discussed at the beginning. 
+
+Whatever your method, just be sure to appreciate greatness.
+
+All the averages for each category and player can be found here: https://docs.google.com/spreadsheets/d/1FnN4xg6IundvdOyIv95--gAAd2NFBBXENH3gbBaMu2A/edit?usp=sharing
+
+The code for this blog post can be found [here]().
+
+
